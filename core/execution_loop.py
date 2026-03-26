@@ -1,53 +1,89 @@
+from enum import Enum
 from core.state_manager import StateManager
 from schemas.claim_schema import Claim
 from schemas.verification_schema import VerificationResult
 
 
+class StepType(str, Enum):
+    EXECUTE = "execute"
+    VERIFY = "verify"
+    GRAPH_UPDATE = "graph_update"
+
+
+class ExecutionContext:
+    def __init__(self, task):
+        self.task = task
+        self.claim = None
+        self.verification = None
+
+
 class ExecutionLoop:
-    def __init__(self, state_manager: StateManager):
-        self.state = state_manager
+    MAX_STEPS = 50
+
+    def __init__(self, state: StateManager, executor=None, verifier=None):
+        self.state = state
+        self.executor = executor or self._default_executor
+        self.verifier = verifier or self._default_verifier
 
     def run(self):
-        while True:
+        steps = 0
+
+        while steps < self.MAX_STEPS:
             task = self.state.get_next_task()
 
             if not task:
                 break
 
-            # -------------------------
-            # STEP 1: Execute (Stub)
-            # -------------------------
-            claim = self._execute_task(task)
+            context = ExecutionContext(task)
 
             # -------------------------
-            # STEP 2: Verify (Stub)
+            # STEP 1: Execute
             # -------------------------
-            verification = self._verify_claim(claim)
+            context.claim = self.executor(task)
 
-            # -------------------------
-            # STEP 3: Store Results
-            # -------------------------
-            self.state.add_claim(claim)
-            self.state.add_verification(verification)
+            self.state.add_claim(context.claim)
 
-            # -------------------------
-            # STEP 4: Log
-            # -------------------------
             self.state.log_step({
-                "task": task.description,
-                "claim": claim.claim_text,
-                "verification": verification.verification_status
+                "step_type": StepType.EXECUTE,
+                "task_id": task.task_id,
+                "claim_id": context.claim.claim_id,
+                "agent": "executor_agent",
+                "status": "success"
             })
 
             # -------------------------
-            # STEP 5: Mark Done
+            # STEP 2: Verify
             # -------------------------
-            self.state.mark_task_complete(task.task_id)
+            context.verification = self.verifier(context.claim)
+
+            self.state.add_verification(context.verification)
+
+            self.state.log_step({
+                "step_type": StepType.VERIFY,
+                "task_id": task.task_id,
+                "claim_id": context.claim.claim_id,
+                "status": context.verification.verification_status
+            })
+
+            # -------------------------
+            # STEP 3: Verification Gate
+            # -------------------------
+            if context.verification.verification_status == "verified":
+                self.state.mark_task_complete(task.task_id)
+            else:
+                self.state.mark_task_failed(task.task_id)
+
+            # -------------------------
+            # STEP 4: Graph Hook
+            # -------------------------
+            self._update_graph(context)
+
+            steps += 1
 
     # -------------------------
-    # MOCK EXECUTOR
+    # Default Executor (Stub)
     # -------------------------
-    def _execute_task(self, task):
+    def _default_executor(self, task):
         return Claim(
             claim_text=f"Executed: {task.description}",
             source_type="reasoning",
@@ -55,9 +91,9 @@ class ExecutionLoop:
         )
 
     # -------------------------
-    # MOCK VERIFIER
+    # Default Verifier (Stub)
     # -------------------------
-    def _verify_claim(self, claim):
+    def _default_verifier(self, claim):
         return VerificationResult(
             claim_id=claim.claim_id,
             verification_status="verified",
@@ -65,3 +101,14 @@ class ExecutionLoop:
             reasoning_validity_score=0.9,
             contradiction_flags=[]
         )
+
+    # -------------------------
+    # Graph Placeholder
+    # -------------------------
+    def _update_graph(self, context: ExecutionContext):
+        self.state.log_step({
+            "step_type": StepType.GRAPH_UPDATE,
+            "task_id": context.task.task_id,
+            "claim_id": context.claim.claim_id,
+            "status": "graph_updated"
+        })

@@ -4,29 +4,20 @@ from schemas.goal_schema import Goal, SubTask
 
 
 class Orchestrator:
-    def __init__(self):
+    def __init__(self, executor=None, verifier=None):
         self.state = StateManager()
-        self.loop = ExecutionLoop(self.state)
+        self.loop = ExecutionLoop(self.state, executor, verifier)
 
     def run(self, user_query: str):
-        # -------------------------
-        # STEP 1: Parse Goal (Stub)
-        # -------------------------
         goal = self._parse_goal(user_query)
         self.state.set_goal(goal)
 
-        # -------------------------
-        # STEP 2: Execute Loop
-        # -------------------------
         self.loop.run()
 
-        # -------------------------
-        # STEP 3: Return State
-        # -------------------------
         return self.state.get_state_snapshot()
 
     # -------------------------
-    # MOCK GOAL PARSER
+    # TEMP Goal Parser (Stub)
     # -------------------------
     def _parse_goal(self, query: str) -> Goal:
         return Goal(
