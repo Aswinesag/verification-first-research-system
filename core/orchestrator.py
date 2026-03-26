@@ -1,31 +1,37 @@
 from core.state_manager import StateManager
 from core.execution_loop import ExecutionLoop
-from schemas.goal_schema import Goal, SubTask
+
+from agents.planner_agent import PlannerAgent
+from agents.executor_agent import ExecutorAgent
+from agents.verifier_agent import VerifierAgent
 
 
 class Orchestrator:
-    def __init__(self, executor=None, verifier=None):
+    def __init__(self, llm=None):
         self.state = StateManager()
-        self.loop = ExecutionLoop(self.state, executor, verifier)
+
+        # Agents
+        self.planner = PlannerAgent(llm)
+        self.executor = ExecutorAgent(llm)
+        self.verifier = VerifierAgent(llm)
+
+        # Inject agents into loop
+        self.loop = ExecutionLoop(
+            self.state,
+            executor=self.executor.execute,
+            verifier=self.verifier.verify
+        )
 
     def run(self, user_query: str):
-        goal = self._parse_goal(user_query)
+        # -------------------------
+        # STEP 1: Plan
+        # -------------------------
+        goal = self.planner.plan(user_query)
         self.state.set_goal(goal)
 
+        # -------------------------
+        # STEP 2: Execute Loop
+        # -------------------------
         self.loop.run()
 
         return self.state.get_state_snapshot()
-
-    # -------------------------
-    # TEMP Goal Parser (Stub)
-    # -------------------------
-    def _parse_goal(self, query: str) -> Goal:
-        return Goal(
-            user_query=query,
-            parsed_objective=query,
-            subtasks=[
-                SubTask(description="Analyze the problem"),
-                SubTask(description="Gather information"),
-                SubTask(description="Produce answer")
-            ]
-        )

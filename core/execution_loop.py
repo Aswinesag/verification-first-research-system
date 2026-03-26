@@ -39,17 +39,25 @@ class ExecutionLoop:
             # -------------------------
             # STEP 1: Execute
             # -------------------------
-            context.claim = self.executor(task)
+            claims = self.executor(task)
 
-            self.state.add_claim(context.claim)
+            for claim in claims:
+                self.state.add_claim(claim)
 
-            self.state.log_step({
-                "step_type": StepType.EXECUTE,
-                "task_id": task.task_id,
-                "claim_id": context.claim.claim_id,
-                "agent": "executor_agent",
-                "status": "success"
-            })
+                verification = self.verifier(claim)
+                self.state.add_verification(verification)
+
+                if verification.verification_status == "verified":
+                    status = "verified"
+                else:
+                    status = "failed"
+
+                self.state.log_step({
+                    "step_type": StepType.VERIFY,
+                    "task_id": task.task_id,
+                    "claim_id": claim.claim_id,
+                    "status": verification.verification_status
+                })
 
             # -------------------------
             # STEP 2: Verify
@@ -68,17 +76,17 @@ class ExecutionLoop:
             # -------------------------
             # STEP 3: Verification Gate
             # -------------------------
-            if context.verification.verification_status == "verified":
+            if all(
+                self.state.verifications[c.claim_id].verification_status == "verified"
+                for c in claims
+            ):
                 self.state.mark_task_complete(task.task_id)
+                break
             else:
                 self.state.mark_task_failed(task.task_id)
+                break
 
-            # -------------------------
-            # STEP 4: Graph Hook
-            # -------------------------
-            self._update_graph(context)
-
-            steps += 1
+            steps += 1 
 
     # -------------------------
     # Default Executor (Stub)
