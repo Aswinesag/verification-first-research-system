@@ -10,15 +10,10 @@ class ResponseParser:
         try:
             return json.loads(text)
         except:
-            cleaned = ResponseParser._extract_json(text)
-            return json.loads(cleaned)
-
-    @staticmethod
-    def _extract_json(text: str):
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if not match:
-            raise ValueError("No JSON found")
-        return match.group(0)
+            match = re.search(r"\{.*\}", text, re.DOTALL)
+            if not match:
+                raise ValueError("No JSON found")
+            return json.loads(match.group(0))
 
     @staticmethod
     def safe_parse(llm, prompt):
@@ -27,5 +22,5 @@ class ResponseParser:
             try:
                 return ResponseParser.parse_json(response)
             except:
-                prompt += "\nFix JSON format."
-        raise ValueError("Failed to parse LLM response")
+                prompt += "\nFix JSON."
+        raise ValueError("Parsing failed")
