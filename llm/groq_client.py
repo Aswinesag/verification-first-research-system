@@ -12,6 +12,6 @@ class GroqLLM(BaseLLM):
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[{"role": "user", "content": prompt}],
-            temperature=temperature
+            temperature=temperature,
         )
-        return response.choices[0].message.content
+        return response.choices[0].message.content.strip()

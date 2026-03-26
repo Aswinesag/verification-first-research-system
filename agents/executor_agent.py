@@ -1,39 +1,37 @@
 from typing import List
 from schemas.claim_schema import Claim, Evidence
+from llm.prompt_builder import build_executor_prompt
+from llm.response_parser import ResponseParser
 
 
 class ExecutorAgent:
-    def __init__(self, llm=None):
+    def __init__(self, llm):
         self.llm = llm
 
     def execute(self, task) -> List[Claim]:
-        """
-        Returns multiple atomic claims for a task
-        """
+        prompt = build_executor_prompt(task.description)
 
-        base = task.description
+        try:
+            data = ResponseParser.safe_parse(self.llm, prompt)
 
-        claims = [
-            self._build_claim(f"{base} involves fundamental principles."),
-            self._build_claim(f"{base} includes multiple interacting components."),
-            self._build_claim(f"{base} has real-world applications.")
-        ]
+            claims = []
+            for item in data.get("claims", []):
+                claims.append(
+                    Claim(
+                        claim_text=item["text"],
+                        evidence_sources=[
+                            Evidence(
+                                source="llm",
+                                snippet=item["text"],
+                                score=item.get("confidence", 0.5)
+                            )
+                        ],
+                        source_type="llm",
+                        created_by_agent="executor_agent",
+                        confidence=item.get("confidence", 0.5)
+                    )
+                )
+            return claims
 
-        return claims
-
-    def _build_claim(self, text: str) -> Claim:
-        evidence = [
-            Evidence(
-                source="reasoning_trace",
-                snippet=f"Inferred from structured reasoning: {text}",
-                score=0.6
-            )
-        ]
-
-        return Claim(
-            claim_text=text,
-            evidence_sources=evidence,
-            source_type="reasoning",
-            created_by_agent="executor_agent",
-            confidence=0.6
-        )
+        except Exception:
+            return []
