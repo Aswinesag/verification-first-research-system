@@ -1,7 +1,7 @@
 import requests
 import os
 from dotenv import load_dotenv
-from utils.logging_utils import setup_logger, log_error, log_info
+from utils.logging_utils_production import setup_logger, log_info, log_error
 from utils.retry_utils import retry
 import time
 

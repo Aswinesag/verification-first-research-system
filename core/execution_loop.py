@@ -1,6 +1,6 @@
 from enum import Enum
 from config.settings import settings
-from utils.logging_utils import setup_logger, log_error, log_info
+from utils.logging_utils_production import setup_logger, log_error, log_info
 from graph.conflict_detector import ConflictDetector
 from uncertainty.uncertainty_estimator import UncertaintyEstimator
 

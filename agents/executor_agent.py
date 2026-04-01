@@ -1,10 +1,13 @@
 from retrieval.retriever import Retriever
 from schemas.claim_schema import Claim, Evidence
+from utils.logging_utils_production import setup_logger, log_info, log_error
+from llm.response_parser import ResponseParser
 
 class ExecutorAgent:
     def __init__(self, llm):
         self.llm = llm
         self.retriever = Retriever()
+        self.logger = setup_logger("executor_agent")
 
     def execute(self, task):
         docs = self.retriever.retrieve(task.description, top_k=5)
@@ -25,7 +28,12 @@ Return JSON:
 """
 
         from llm.response_parser import ResponseParser
-        data = ResponseParser.safe_parse(self.llm, prompt)
+        try:
+            data = ResponseParser.safe_parse(self.llm, prompt)
+            log_info("Successfully parsed response")
+        except Exception as e:
+            log_error(f"Error parsing response: {str(e)}")
+            return []
 
         claims = []
         for item in data["claims"]:

@@ -3,7 +3,7 @@ from retrieval.embeddings_fallback import EmbeddingModel
 from retrieval.reranker_fallback import Reranker
 from tools.web_search_tool import WebSearchTool
 from retrieval.web_ingestor import WebIngestor
-from utils.logging_utils import setup_logger, log_error, log_info
+from utils.logging_utils_production import setup_logger, log_info, log_error
 from utils.retry_utils import retry
 import numpy as np
 

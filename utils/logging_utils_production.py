@@ -1,9 +1,12 @@
+"""
+Production Structured Logging Utilities
+"""
+
 import logging
-import sys
-from datetime import datetime
-from typing import Dict, Any, Optional
 import json
 import time
+from typing import Dict, Any, Optional
+
 
 class StructuredFormatter(logging.Formatter):
     """Structured JSON formatter for production logging"""
@@ -77,12 +80,25 @@ def log_structured(logger: logging.Logger, level: str, message: str,
     extra = {k: v for k, v in extra.items() if v is not None}
     
     getattr(logger, level.lower())(message, extra=extra)
-def log_info(logger: logging.Logger, message: str, context: Optional[dict] = None):
-    """Log info with optional context"""
-    if context:
-        message = f"{message} | Context: {context}"
-    logger.info(message)
 
-def log_warning(logger: logging.Logger, message: str):
-    """Log warning"""
-    logger.warning(message)
+
+def log_info(logger: logging.Logger, message: str, **kwargs):
+    """Log info message with structured data"""
+    log_structured(logger, 'INFO', message, **kwargs)
+
+
+def log_error(logger: logging.Logger, error: Exception, message: str, **kwargs):
+    """Log error message with exception details"""
+    kwargs['error_type'] = type(error).__name__
+    kwargs['error_message'] = str(error)
+    log_structured(logger, 'ERROR', message, **kwargs)
+
+
+def log_warning(logger: logging.Logger, message: str, **kwargs):
+    """Log warning message with structured data"""
+    log_structured(logger, 'WARNING', message, **kwargs)
+
+
+def log_debug(logger: logging.Logger, message: str, **kwargs):
+    """Log debug message with structured data"""
+    log_structured(logger, 'DEBUG', message, **kwargs)
