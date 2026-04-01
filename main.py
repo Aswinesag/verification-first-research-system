@@ -4,7 +4,7 @@ from llm.llm_router import LLMRouter
 from config.settings import settings
 from core.orchestrator import Orchestrator
 from graph.graph_metrics import GraphMetrics
-from utils.logging_utils import setup_logger, log_error, log_info
+from utils.logging_utils_production import setup_logger, log_error, log_info
 
 # Setup logging
 logger = setup_logger("main")

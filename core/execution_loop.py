@@ -141,9 +141,9 @@ class ExecutionLoop:
                         log_error(self.logger, e, "Conflict detection failed")
                 
                 # Estimate system-level confidence if uncertainty estimator available
-                if self.uncertainty_estimator and task_claims_with_uncertainty:
+                if self.uncertainty_estimator and claims_with_uncertainty:
                     try:
-                        system_confidence = self.uncertainty_estimator.estimate_system_confidence(task_claims_with_uncertainty)
+                        system_confidence = self.uncertainty_estimator.estimate_system_confidence(claims_with_uncertainty)
                         log_info(self.logger, f"System confidence: {system_confidence['overall_confidence']:.3f}, risk: {system_confidence['risk_level']}")
                         
                         # Store system confidence in state

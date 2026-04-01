@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VARA Frontend Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0f;
+            color: #e8e8e8;
+        }
+        .container {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        button {
+            background: #00ff88;
+            color: #0a0a0f;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #00cc70;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #050508;
+            border: 1px solid #2a2a3e;
+            color: #e8e8e8;
+            border-radius: 5px;
+        }
+        .result {
+            background: #050508;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success { color: #26de81; }
+        .error { color: #ff4757; }
+        .info { color: #4834d4; }
+    </style>
+</head>
+<body>
+    <h1>🔍 VARA Frontend Debug Tool</h1>
+    
+    <div class="container">
+        <h2>API Connection Test</h2>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <button onclick="testQuery()">Test Query Endpoint</button>
+        <div id="api-result" class="result"></div>
+    </div>
+    
+    <div class="container">
+        <h2>Query Test</h2>
+        <input type="text" id="query-input" value="What is Artificial Intelligence?" placeholder="Enter your query...">
+        <button onclick="runQuery()">Run Query</button>
+        <div id="query-result" class="result"></div>
+    </div>
+    
+    <div class="container">
+        <h2>Console Log</h2>
+        <div id="console-log" class="result"></div>
+    </div>
+
+    <script>
+        // Override console.log to display in the page
+        const originalLog = console.log;
+        const originalError = console.error;
+        const consoleLog = document.getElementById('console-log');
+        
+        function addToConsole(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            consoleLog.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '), 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole(args.join(' '), 'error');
+        };
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = 'Testing health endpoint...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/health');
+                const data = await response.json();
+                resultDiv.innerHTML = `<span class="success">✅ Health Check Successful</span>\n\n${JSON.stringify(data, null, 2)}`;
+                console.log('Health check successful:', data);
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Health Check Failed</span>\n\n${error.message}`;
+                console.error('Health check failed:', error);
+            }
+        }
+
+        async function testQuery() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = 'Testing query endpoint...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: 'What is Artificial Intelligence?'
+                    })
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = `<span class="success">✅ Query Test Successful</span>\n\n${JSON.stringify(data, null, 2)}`;
+                console.log('Query test successful:', data);
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Query Test Failed</span>\n\n${error.message}`;
+                console.error('Query test failed:', error);
+            }
+        }
+
+        async function runQuery() {
+            const queryInput = document.getElementById('query-input');
+            const resultDiv = document.getElementById('query-result');
+            const query = queryInput.value.trim();
+            
+            if (!query) {
+                resultDiv.innerHTML = '<span class="error">❌ Please enter a query</span>';
+                return;
+            }
+            
+            resultDiv.innerHTML = 'Processing query...';
+            console.log('🚀 Running query:', query);
+            
+            try {
+                const response = await fetch('http://localhost:8000/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<span class="success">✅ Query Successful</span>\n\n${JSON.stringify(data, null, 2)}`;
+                    console.log('✅ Query successful:', data);
+                } else {
+                    resultDiv.innerHTML = `<span class="error">❌ Query Failed</span>\n\nStatus: ${response.status}\n${JSON.stringify(data, null, 2)}`;
+                    console.error('❌ Query failed:', data);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Query Error</span>\n\n${error.message}`;
+                console.error('❌ Query error:', error);
+            }
+        }
+
+        // Auto-test on load
+        window.onload = function() {
+            console.log('🔍 VARA Debug Tool Loaded');
+            setTimeout(testHealth, 1000);
+        };
+    </script>
+</body>
+</html>

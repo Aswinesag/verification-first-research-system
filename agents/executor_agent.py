@@ -30,9 +30,9 @@ Return JSON:
         from llm.response_parser import ResponseParser
         try:
             data = ResponseParser.safe_parse(self.llm, prompt)
-            log_info("Successfully parsed response")
+            log_info(self.logger, "Successfully parsed response")
         except Exception as e:
-            log_error(f"Error parsing response: {str(e)}")
+            log_error(self.logger, e, f"Error parsing response: {str(e)}")
             return []
 
         claims = []

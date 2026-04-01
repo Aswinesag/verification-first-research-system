@@ -19,7 +19,7 @@ from llm.hf_client import HFLLM
 from llm.llm_router import LLMRouter
 from config.settings import settings
 from utils.metrics import metrics_collector
-from utils.logging_utils import setup_logger, log_error, log_info
+from utils.logging_utils_production import setup_logger, log_error, log_info
 from utils.retry_utils_enhanced import safe_execute, TimeoutError
 
 
