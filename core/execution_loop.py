@@ -2,6 +2,7 @@ from enum import Enum
 from config.settings import settings
 from utils.logging_utils import setup_logger, log_error, log_info
 from graph.conflict_detector import ConflictDetector
+from uncertainty.uncertainty_estimator import UncertaintyEstimator
 
 
 class StepType(str, Enum):
@@ -11,12 +12,13 @@ class StepType(str, Enum):
 
 
 class ExecutionLoop:
-    def __init__(self, state, executor, verifier, debate_agent=None, llm=None):
+    def __init__(self, state, executor, verifier, debate_agent=None, llm=None, uncertainty_estimator=None):
         self.state = state
         self.executor = executor
         self.verifier = verifier
         self.debate_agent = debate_agent
         self.llm = llm
+        self.uncertainty_estimator = uncertainty_estimator
         self.logger = setup_logger("execution_loop")
         # Use the graph from state instead of creating a new one
         self.graph = state.graph
@@ -54,6 +56,7 @@ class ExecutionLoop:
 
                 all_verified = True
                 verified_claims = []
+                claims_with_uncertainty = []
 
                 for claim in claims:
                     try:
@@ -61,7 +64,20 @@ class ExecutionLoop:
 
                         verification = self.verifier(claim)
                         self.state.add_verification(verification)
-
+                        
+                        # Estimate uncertainty if available
+                        uncertainty_result = None
+                        if self.uncertainty_estimator:
+                            graph_context = {
+                                'contradictions': []  # Will be updated after conflict detection
+                            }
+                            uncertainty_result = self.uncertainty_estimator.estimate_claim_uncertainty(
+                                claim.__dict__ if hasattr(claim, '__dict__') else claim,
+                                verification.__dict__ if hasattr(verification, '__dict__') else verification,
+                                graph_context
+                            )
+                            claims_with_uncertainty.append(uncertainty_result)
+                        
                         self.graph.add_claim(claim, verification)
 
                         if verification.verification_status != "verified":
@@ -83,13 +99,31 @@ class ExecutionLoop:
                 # -------------------------
                 # CONFLICT DETECTION
                 # -------------------------
-                if len(verified_claims) >= 2:
+                if len(verified_claims) >= 2 and self.uncertainty_estimator:
                     try:
                         conflicts = self.conflict_detector.detect(self.graph)
                         
                         if conflicts:
                             log_info(self.logger, f"Detected {len(conflicts)} conflicts")
                             
+                            # Update uncertainty estimates with conflict information
+                            for claim, verification in verified_claims:
+                                claim_id = claim.claim_id
+                                graph_context = {
+                                    'contradictions': conflicts
+                                }
+                                
+                                # Re-estimate uncertainty with conflict information
+                                uncertainty_result = self.uncertainty_estimator.estimate_claim_uncertainty(
+                                    claim.__dict__ if hasattr(claim, '__dict__') else claim,
+                                    verification.__dict__ if hasattr(verification, '__dict__') else verification,
+                                    graph_context
+                                )
+                                
+                                # Update claim with uncertainty information
+                                if hasattr(claim, 'uncertainty'):
+                                    claim.uncertainty = uncertainty_result
+                                
                             # Downgrade verification confidence for conflicting claims
                             for conflict in conflicts:
                                 self._handle_conflict(conflict, verified_claims)
@@ -105,7 +139,19 @@ class ExecutionLoop:
                             
                     except Exception as e:
                         log_error(self.logger, e, "Conflict detection failed")
-
+                
+                # Estimate system-level confidence if uncertainty estimator available
+                if self.uncertainty_estimator and task_claims_with_uncertainty:
+                    try:
+                        system_confidence = self.uncertainty_estimator.estimate_system_confidence(task_claims_with_uncertainty)
+                        log_info(self.logger, f"System confidence: {system_confidence['overall_confidence']:.3f}, risk: {system_confidence['risk_level']}")
+                        
+                        # Store system confidence in state
+                        self.state.system_confidence = system_confidence
+                        
+                    except Exception as e:
+                        log_error(self.logger, e, "Failed to estimate system confidence")
+            
                 if all_verified:
                     self.state.mark_task_complete(task.task_id)
                     log_info(self.logger, f"Task completed: {task.task_id}")

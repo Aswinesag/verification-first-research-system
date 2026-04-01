@@ -63,10 +63,16 @@ class StateManager:
     # Snapshot (Serializable)
     # -------------------------
     def get_state_snapshot(self) -> Dict:
-        return {
+        snapshot = {
             "goal": self.goal.model_dump() if self.goal else None,
             "current_task": self.current_task.model_dump() if self.current_task else None,
             "claims": [c.model_dump() for c in self.claims.values()],
             "verifications": [v.model_dump() for v in self.verifications.values()],
             "steps": len(self.execution_log),
         }
+        
+        # Add system confidence if available
+        if hasattr(self, 'system_confidence') and self.system_confidence:
+            snapshot["system_confidence"] = self.system_confidence
+        
+        return snapshot
