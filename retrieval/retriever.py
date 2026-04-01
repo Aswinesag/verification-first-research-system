@@ -1,7 +1,6 @@
-import numpy as np
-from retrieval.embeddings import EmbeddingModel
-from retrieval.faiss_index import FAISSIndex
-from retrieval.reranker import Reranker
+from tools.web_search_tool import WebSearchTool
+from retrieval.web_ingestor import WebIngestor
+from config.settings import settings
 
 
 class Retriever:
@@ -10,15 +9,28 @@ class Retriever:
         self.index = FAISSIndex(dim=768)
         self.reranker = Reranker()
 
-    def index_documents(self, docs):
-        embeddings = self.embedder.encode(docs)
-        self.index.add(embeddings, docs)
-        self.index.save()
+        self.web_enabled = os.getenv("ENABLE_WEB_SEARCH", "true") == "true"
+        self.web_tool = WebSearchTool() if self.web_enabled else None
+        self.web_ingestor = WebIngestor(self.index) if self.web_enabled else None
 
     def retrieve(self, query, top_k=5):
+        # -------------------------
+        # LOCAL SEARCH
+        # -------------------------
         query_vec = self.embedder.encode([query])
-        results = self.index.search(query_vec, top_k)
+        local_results = self.index.search(query_vec, top_k)
 
-        reranked = self.reranker.rerank(query, results)
+        # -------------------------
+        # WEB SEARCH
+        # -------------------------
+        if self.web_enabled:
+            web_results = self.web_tool.search(query, k=top_k)
+            self.web_ingestor.ingest_search_results(web_results)
 
-        return reranked
+            # search again with enriched index
+            local_results = self.index.search(query_vec, top_k)
+
+        # -------------------------
+        # RERANK
+        # -------------------------
+        return self.reranker.rerank(query, local_results)
