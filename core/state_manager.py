@@ -3,6 +3,7 @@ from datetime import datetime
 from schemas.goal_schema import Goal, SubTask
 from schemas.claim_schema import Claim
 from schemas.verification_schema import VerificationResult
+from graph.knowledge_graph import KnowledgeGraph
 
 
 class StateManager:
@@ -14,6 +15,7 @@ class StateManager:
         self.verifications: Dict[str, VerificationResult] = {}
 
         self.execution_log: List[Dict] = []
+        self.graph = KnowledgeGraph()
 
     # -------------------------
     # Goal Handling

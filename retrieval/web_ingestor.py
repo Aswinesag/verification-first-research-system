@@ -1,6 +1,6 @@
 from tools.web_scraper import WebScraper
 from retrieval.chunking import chunk_text
-from retrieval.embeddings import EmbeddingModel
+from retrieval.embeddings_fallback import EmbeddingModel
 from retrieval.metadata_store import MetadataStore
 
 

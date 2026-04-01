@@ -27,7 +27,8 @@ class Orchestrator:
             self.state,
             executor=self.executor.execute,
             verifier=self.verifier.verify,
-            debate_agent=debate_agent
+            debate_agent=debate_agent,
+            llm=llm
         )
 
     def run(self, query: str):
