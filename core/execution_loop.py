@@ -13,6 +13,7 @@ class ExecutionLoop:
         self.executor = executor
         self.verifier = verifier
         self.debate_agent = debate_agent
+        self.graph = None
 
     def run(self):
         steps = 0
@@ -37,6 +38,8 @@ class ExecutionLoop:
 
                 verification = self.verifier(claim)
                 self.state.add_verification(verification)
+
+                self.graph.add_claim(claim, verification)
 
                 if verification.verification_status != "verified":
                     all_verified = False

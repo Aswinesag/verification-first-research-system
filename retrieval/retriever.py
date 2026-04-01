@@ -1,36 +1,25 @@
-from tools.web_search_tool import WebSearchTool
-from retrieval.web_ingestor import WebIngestor
-from config.settings import settings
-
+from retrieval.persistent_index import PersistentIndex
 
 class Retriever:
     def __init__(self):
         self.embedder = EmbeddingModel()
-        self.index = FAISSIndex(dim=768)
+        self.index = PersistentIndex()
         self.reranker = Reranker()
 
-        self.web_enabled = os.getenv("ENABLE_WEB_SEARCH", "true") == "true"
-        self.web_tool = WebSearchTool() if self.web_enabled else None
-        self.web_ingestor = WebIngestor(self.index) if self.web_enabled else None
+        self.web_tool = WebSearchTool()
+        self.web_ingestor = WebIngestor(self.index)
 
     def retrieve(self, query, top_k=5):
-        # -------------------------
-        # LOCAL SEARCH
-        # -------------------------
         query_vec = self.embedder.encode([query])
-        local_results = self.index.search(query_vec, top_k)
 
-        # -------------------------
-        # WEB SEARCH
-        # -------------------------
-        if self.web_enabled:
-            web_results = self.web_tool.search(query, k=top_k)
-            self.web_ingestor.ingest_search_results(web_results)
+        # Local search
+        results = self.index.search(query_vec, top_k)
 
-            # search again with enriched index
-            local_results = self.index.search(query_vec, top_k)
+        # If weak → fetch web
+        if not results or results[0]["score"] < 0.5:
+            web_results = self.web_tool.search(query, k=3)
+            self.web_ingestor.ingest(web_results)
 
-        # -------------------------
-        # RERANK
-        # -------------------------
-        return self.reranker.rerank(query, local_results)
+            results = self.index.search(query_vec, top_k)
+
+        return self.reranker.rerank(query, results)
