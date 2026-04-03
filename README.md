@@ -60,6 +60,44 @@ It combines orchestration, retrieval, claim verification, conflict detection, an
 - React + Vite + Zustand + Framer Motion.
 - Calls backend APIs, normalizes response payloads, and renders interactive panels.
 
+## Problem Statement
+
+Modern AI systems, particularly large language models (LLMs), are highly capable at generating fluent and contextually relevant responses. However, they often exhibit critical limitations:
+
+* They can produce **factually incorrect or hallucinated information**
+* They tend to be **overconfident**, even when uncertain
+* They lack **transparent reasoning and verifiability**
+* They do not explicitly account for **conflicting or incomplete information**
+
+In real-world domains such as healthcare, legal analysis, and decision support, these limitations make it difficult to **trust AI-generated outputs without additional validation**.
+
+---
+
+## Our Approach
+
+VARA (Verified Autonomous Reasoning Agent) is an experimental system that explores a more structured approach to AI reasoning by combining:
+
+* Multi-agent task decomposition
+* Retrieval-augmented generation (RAG)
+* Claim-level verification
+* Knowledge graph construction
+* Uncertainty and confidence estimation
+
+Rather than treating AI outputs as final answers, VARA attempts to **break down responses into verifiable claims, evaluate supporting evidence, and quantify uncertainty**.
+
+---
+
+## Scope & Limitations
+
+VARA is **not a definitive solution to AI reliability**. Instead, it serves as a:
+
+* Research-oriented framework
+* Exploration of trust-aware AI pipelines
+* Foundation for building more robust reasoning systems
+
+The system still depends on the quality of retrieved data and underlying language models, and its outputs should be interpreted as **assisted reasoning rather than guaranteed truth**.
+
+
 ## Repository Structure
 
 ```text
