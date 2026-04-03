@@ -19,8 +19,15 @@ const ReasoningPanel = () => {
     }))
   }
 
-  const claims = response?.claims || []
-  const subtasks = response?.subtasks || []
+  const claims = Array.isArray(response?.claims) ? response.claims : []
+  const subtasks = Array.isArray(response?.subtasks)
+    ? response.subtasks
+    : Array.isArray(response?.goal?.subtasks)
+      ? response.goal.subtasks
+      : []
+  const goalText = typeof response?.goal === 'string'
+    ? response.goal
+    : response?.goal?.user_query || response?.goal?.parsed_objective || 'No goal available'
 
   if (!response) return null
 
@@ -53,7 +60,7 @@ const ReasoningPanel = () => {
         {expandedSections.goal && (
           <div style={{ padding: '0 16px 16px' }}>
             <p style={{ color: '#e8e8e8', backgroundColor: '#050508', padding: '12px', borderRadius: '8px' }}>
-              {response.goal}
+              {goalText}
             </p>
           </div>
         )}
@@ -109,7 +116,9 @@ const ReasoningPanel = () => {
                   }}>
                     {index + 1}
                   </div>
-                  <p style={{ color: '#e8e8e8', fontSize: '14px' }}>{subtask.description}</p>
+                  <p style={{ color: '#e8e8e8', fontSize: '14px' }}>
+                    {typeof subtask === 'string' ? subtask : (subtask?.description || 'Subtask')}
+                  </p>
                 </div>
               ))}
             </div>

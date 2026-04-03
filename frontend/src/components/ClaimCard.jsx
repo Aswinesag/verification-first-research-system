@@ -59,8 +59,7 @@ const ClaimCard = ({ claim, index, isSelected, onSelect }) => {
         padding: '16px',
         cursor: 'pointer',
         transition: 'all 0.2s ease',
-        transform: isSelected ? 'scale(1.02)' : 'scale(1)',
-        transform: isSelected ? 'translateY(-8px)' : 'translateY(0)',
+        transform: isSelected ? 'scale(1.02) translateY(-8px)' : 'scale(1) translateY(0)',
         borderColor: isSelected ? '#00ff88' : '#2a2a3e'
       }}
       onClick={handleClick}

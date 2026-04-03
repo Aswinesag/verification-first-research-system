@@ -105,8 +105,8 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-vara-dark">
-      <div className="container mx-auto px-4 py-8">
+    <div className="app-shell">
+      <div className="app-container">
         {/* Query Bar */}
         <QueryBar onSubmit={handleRunQuery} />
 
@@ -117,13 +117,9 @@ const Home = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="max-w-4xl mx-auto mb-6"
+              className="error-wrap"
             >
-              <div className="card" style={{
-                backgroundColor: 'rgba(255, 71, 87, 0.1)',
-                borderColor: 'rgba(255, 71, 87, 0.3)',
-                padding: '16px'
-              }}>
+              <div className="error-banner">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <AlertCircle className="h-5 w-5" style={{ color: '#ff4757' }} />
@@ -135,28 +131,14 @@ const Home = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleRetry}
-                      style={{
-                        backgroundColor: '#ff4757',
-                        color: 'white',
-                        border: 'none',
-                        padding: '4px 12px',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontSize: '14px'
-                      }}
+                      className="error-action"
                     >
                       <RefreshCw className="h-4 w-4" />
                       Retry
                     </button>
                     <button
                       onClick={handleClearError}
-                      style={{
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        padding: '4px',
-                        borderRadius: '8px',
-                        cursor: 'pointer'
-                      }}
+                      className="error-dismiss"
                     >
                       <AlertCircle className="h-4 w-4" style={{ color: '#ff4757' }} />
                     </button>
@@ -169,9 +151,9 @@ const Home = () => {
 
         {/* Main Content */}
         {loading || response ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="dashboard-grid">
             {/* Left Column */}
-            <div className="space-y-6">
+            <div className="dashboard-column">
               {/* Execution Flow */}
               <ExecutionFlow />
               
@@ -180,7 +162,7 @@ const Home = () => {
             </div>
 
             {/* Right Column */}
-            <div className="space-y-6">
+            <div className="dashboard-column">
               {/* Graph Panel */}
               <GraphPanel />
               
@@ -193,19 +175,19 @@ const Home = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-4xl mx-auto mt-12 text-center"
+              className="empty-wrap"
             >
-              <div className="card">
-                <h2 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#e8e8e8', marginBottom: '16px' }}>
+              <div className="empty-state">
+                <h2 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#e8e8e8', marginBottom: '12px' }}>
                   Welcome to VARA Intelligence Console
                 </h2>
-                <p style={{ color: '#a0a0b8', marginBottom: '32px', maxWidth: '512px', margin: '0 auto' }}>
+                <p style={{ color: '#a0a0b8', marginBottom: '28px', maxWidth: '640px', margin: '0 auto' }}>
                   Experience AI-powered reasoning with verification, uncertainty estimation, and knowledge graph visualization.
                   Ask any question and watch as VARA analyzes, verifies, and builds a comprehensive understanding.
                 </p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="card" style={{ backgroundColor: '#050508', padding: '16px' }}>
+                <div className="feature-grid">
+                  <div className="feature-tile">
                     <div className="w-8 h-8" style={{
                       backgroundColor: 'rgba(0, 255, 136, 0.2)',
                       borderRadius: '8px',
@@ -222,7 +204,7 @@ const Home = () => {
                     </p>
                   </div>
                   
-                  <div className="card" style={{ backgroundColor: '#050508', padding: '16px' }}>
+                  <div className="feature-tile">
                     <div className="w-8 h-8" style={{
                       backgroundColor: 'rgba(38, 222, 129, 0.2)',
                       borderRadius: '8px',
@@ -239,7 +221,7 @@ const Home = () => {
                     </p>
                   </div>
                   
-                  <div className="card" style={{ backgroundColor: '#050508', padding: '16px' }}>
+                  <div className="feature-tile">
                     <div className="w-8 h-8" style={{
                       backgroundColor: 'rgba(72, 52, 212, 0.2)',
                       borderRadius: '8px',
