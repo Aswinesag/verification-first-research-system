@@ -28,7 +28,7 @@ It combines orchestration, retrieval, claim verification, conflict detection, an
   - System confidence and risk panel
   - Claim detail drawer with evidence/verification details
 
-## System Architecture (Brief)
+## System Architecture
 
 ### 1) API Layer (`api/`)
 - FastAPI application exposes primary endpoints:
