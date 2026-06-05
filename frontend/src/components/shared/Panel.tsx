@@ -26,6 +26,6 @@ export const Panel: React.FC<PanelProps> = ({
       </div>
       {action}
     </div>
-    <div className={cn('min-h-0 flex-1', !noPadding && 'p-4')}>{children}</div>
+    <div className={cn('min-h-0 flex-1 overflow-hidden', !noPadding && 'p-4')}>{children}</div>
   </div>
 )

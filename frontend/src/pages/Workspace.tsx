@@ -24,7 +24,8 @@ const Workspace: React.FC = () => {
 
   return (
     <div className="flex h-full flex-col bg-background">
-      <div className="border-b border-border px-6 py-5">
+      {/* Composer */}
+      <div className="shrink-0 border-b border-border px-6 py-5">
         <div className="mb-1">
           <h2 className="text-sm font-medium text-muted-foreground">Research Workspace</h2>
           <p className="text-xs text-muted-foreground">
@@ -35,7 +36,7 @@ const Workspace: React.FC = () => {
       </div>
 
       {error && (
-        <div className="mx-6 mt-4 flex items-center justify-between rounded-lg border border-danger/30 bg-danger/10 px-4 py-3">
+        <div className="mx-6 mt-4 flex shrink-0 items-center justify-between rounded-lg border border-danger/30 bg-danger/10 px-4 py-3">
           <div className="flex items-center gap-2 text-sm text-danger">
             <AlertCircle className="h-4 w-4 shrink-0" />
             {error}
@@ -46,43 +47,51 @@ const Workspace: React.FC = () => {
         </div>
       )}
 
-      <div className="min-h-0 flex-1 overflow-auto p-6">
-        <div className="grid h-full grid-cols-12 gap-4">
-          <Panel title="Investigation Timeline" className="col-span-12 lg:col-span-4 h-80 lg:h-auto" subtitle="Pipeline progress">
-            <InvestigationTimeline />
-          </Panel>
+      {/* Scrollable investigation panels */}
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="space-y-4 p-6 pb-8">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <Panel title="Investigation Timeline" subtitle="Pipeline progress" className="min-h-[280px]">
+              <InvestigationTimeline />
+            </Panel>
+            <Panel title="Agent Activity" subtitle="Live agent actions" className="min-h-[280px]">
+              <AgentActivityFeed />
+            </Panel>
+            <Panel title="Claims Explorer" subtitle="Research findings" className="min-h-[280px]">
+              <ClaimsExplorer />
+            </Panel>
+          </div>
 
-          <Panel title="Agent Activity" className="col-span-12 lg:col-span-4 h-80 lg:h-auto" subtitle="Live agent actions">
-            <AgentActivityFeed />
-          </Panel>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <Panel
+              title="Knowledge Graph"
+              subtitle="Claim relationships and contradictions"
+              className="overflow-hidden lg:col-span-2"
+              noPadding
+            >
+              <div className="relative h-[340px] overflow-hidden">
+                <KnowledgeGraph />
+              </div>
+            </Panel>
 
-          <Panel title="Claims Explorer" className="col-span-12 lg:col-span-4 h-96 lg:h-auto" subtitle="Research findings">
-            <ClaimsExplorer />
-          </Panel>
-
-          <Panel
-            title="Knowledge Graph"
-            className="col-span-12 lg:col-span-8 h-[420px]"
-            subtitle="Claim relationships and contradictions"
-            noPadding
-          >
-            <div className="h-[360px] p-2">
-              <KnowledgeGraph />
-            </div>
-          </Panel>
-
-          <Panel title="Evidence Explorer" className="col-span-12 lg:col-span-4 h-[420px]" noPadding>
-            <div className="h-[360px] p-4">
-              <EvidenceExplorer />
-            </div>
-          </Panel>
+            <Panel title="Evidence Explorer" className="overflow-hidden" noPadding>
+              <div className="h-[340px] overflow-hidden p-4">
+                <EvidenceExplorer />
+              </div>
+            </Panel>
+          </div>
         </div>
       </div>
 
-      <div className="border-t border-border px-6 py-5">
-        <Panel title="Confidence Center" subtitle="Trust and verification metrics" className="border-0 bg-transparent">
+      {/* Confidence Center — fixed footer, visually separated */}
+      <div className="shrink-0 border-t border-border bg-surface">
+        <div className="px-6 py-5">
+          <div className="mb-4">
+            <h3 className="text-sm font-medium text-foreground">Confidence Center</h3>
+            <p className="text-xs text-muted-foreground">Trust and verification metrics</p>
+          </div>
           <ConfidenceCenter />
-        </Panel>
+        </div>
       </div>
 
       <ClaimDetailPanel

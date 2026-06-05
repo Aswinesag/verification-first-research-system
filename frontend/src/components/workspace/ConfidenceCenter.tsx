@@ -43,7 +43,7 @@ export const ConfidenceCenter: React.FC = () => {
 
   if (!response || claims.length === 0) {
     return (
-      <div className="py-6 text-center text-sm text-muted-foreground">
+      <div className="rounded-xl border border-border bg-background py-8 text-center text-sm text-muted-foreground">
         Confidence metrics will appear after an investigation completes
       </div>
     )
@@ -55,7 +55,6 @@ export const ConfidenceCenter: React.FC = () => {
       value: formatPercentage(overallConfidence),
       icon: Shield,
       detail: <Progress value={overallConfidence * 100} className="mt-2 h-1.5" />,
-      span: 'col-span-2',
     },
     {
       label: 'Trust Score',
@@ -67,7 +66,6 @@ export const ConfidenceCenter: React.FC = () => {
       label: 'Risk Level',
       value: riskLevel,
       icon: AlertTriangle,
-      detail: null,
       valueClass: cn('capitalize', getRiskColor(riskLevel)),
     },
     {
@@ -102,22 +100,19 @@ export const ConfidenceCenter: React.FC = () => {
   ]
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
       {metrics.map((m) => {
         const Icon = m.icon
         return (
           <div
             key={m.label}
-            className={cn(
-              'rounded-xl border border-border bg-background p-4',
-              m.span
-            )}
+            className="min-w-0 rounded-xl border border-border bg-background p-4"
           >
             <div className="mb-2 flex items-center gap-2">
-              <Icon className="h-4 w-4 text-primary" />
-              <span className="text-xs font-medium text-muted-foreground">{m.label}</span>
+              <Icon className="h-4 w-4 shrink-0 text-primary" />
+              <span className="truncate text-xs font-medium text-muted-foreground">{m.label}</span>
             </div>
-            <p className={cn('text-2xl font-bold text-foreground capitalize', m.valueClass)}>
+            <p className={cn('text-xl font-bold text-foreground capitalize xl:text-2xl', m.valueClass)}>
               {m.value}
             </p>
             {m.detail}

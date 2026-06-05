@@ -37,6 +37,12 @@
 }
 
 @layer components {
+  /* Contain force-graph tooltips within the workspace */
+  .graph-tooltip {
+    @apply max-w-xs rounded-md border border-border bg-surface px-2 py-1 text-xs text-foreground shadow-lg;
+    pointer-events: none;
+  }
+
   /* Custom scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
     @apply w-2;

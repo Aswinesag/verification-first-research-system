@@ -80,11 +80,13 @@ export const GraphVisualization: React.FC<GraphVisualizationProps> = ({
   }
 
   return (
-    <div className={cn('h-full w-full', className)}>
+    <div className={cn('relative h-full w-full overflow-hidden', className)}>
       <ForceGraph2D
         ref={graphRef}
         graphData={graphData}
-        nodeLabel={(node: GraphNode) => node.text}
+        nodeLabel={(node: GraphNode) =>
+          node.text.length > 80 ? `${node.text.slice(0, 80)}…` : node.text
+        }
         nodeColor={(node: GraphNode) => {
           const dimmed = filteredNodeIds !== null && !filteredNodeIds.has(node.id)
           return getNodeColor(node, node.id === selectedNodeId, dimmed)
