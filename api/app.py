@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field, validator
 from typing import Optional, Dict, Any, List
 import time
 import uuid
+import asyncio
 from contextlib import asynccontextmanager
 
 from core.orchestrator import Orchestrator
@@ -20,7 +21,7 @@ from llm.llm_router import LLMRouter
 from config.settings import settings
 from utils.metrics import metrics_collector
 from utils.logging_utils_production import setup_logger, log_error, log_info
-from utils.retry_utils_enhanced import safe_execute, TimeoutError
+from utils.retry_utils_enhanced import TimeoutError
 
 
 logger = setup_logger("api_app")
@@ -218,15 +219,19 @@ async def process_query(request: QueryRequest, http_request: Request):
         
         context.add_step('api', 'query_received')
         
-        # Process query with timeout
+        # Run blocking orchestrator off the event loop with a server-side timeout.
         def process_with_orchestrator():
             return orchestrator.run(request.query)
-        
-        result = safe_execute(
-            process_with_orchestrator,
-            default_return={'error': 'Processing failed'},
-            exceptions=(Exception,)
-        )
+
+        try:
+            result = await asyncio.wait_for(
+                asyncio.to_thread(process_with_orchestrator),
+                timeout=settings.API_TIMEOUT,
+            )
+        except asyncio.TimeoutError as exc:
+            raise TimeoutError(
+                f"Query processing exceeded {settings.API_TIMEOUT}s limit"
+            ) from exc
         
         if 'error' in result:
             raise HTTPException(
@@ -251,7 +256,10 @@ async def process_query(request: QueryRequest, http_request: Request):
     
     except HTTPException:
         raise
-    
+
+    except TimeoutError:
+        raise
+
     except Exception as e:
         elapsed_ms = (time.time() - start_time) * 1000
         log_error(logger, e, f"Query processing failed for request {request_id}")

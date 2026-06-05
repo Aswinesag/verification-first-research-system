@@ -51,7 +51,7 @@ class Settings:
     # API Settings
     API_HOST = os.getenv("API_HOST", "0.0.0.0")
     API_PORT = int(os.getenv("API_PORT", 8000))
-    API_TIMEOUT = int(os.getenv("API_TIMEOUT", 300))
+    API_TIMEOUT = int(os.getenv("API_TIMEOUT", 600))
     ENABLE_RATE_LIMITING = os.getenv("ENABLE_RATE_LIMITING", "false").lower() == "true"
     RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", 10))
     RATE_LIMIT_PERIOD = int(os.getenv("RATE_LIMIT_PERIOD", 60))
