@@ -9,6 +9,8 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    // Prefer TypeScript sources over legacy .js duplicates (e.g. api.ts over api.js).
+    extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
   },
   server: {
     port: 3000,
